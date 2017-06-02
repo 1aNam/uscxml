@@ -1,0 +1,64 @@
+--- orig/src/bindings/swig/csharp/org/uscxml/Data.cs	2017-06-02 10:34:03.235138200 +0200
++++ modified/src/bindings/swig/csharp/org/uscxml/Data.cs	2017-05-25 15:41:18.156050700 +0200
+@@ -14,6 +14,10 @@
+   private global::System.Runtime.InteropServices.HandleRef swigCPtr;
+   protected bool swigCMemOwn;
+ 
++  private System.Text.Encoding osEncoding = System.Text.Encoding.Default;
++  private System.Text.Encoding utf8 = System.Text.Encoding.UTF8;
++  private System.Text.Encoding utf16 = System.Text.Encoding.Unicode;
++
+   internal Data(global::System.IntPtr cPtr, bool cMemoryOwn) {
+     swigCMemOwn = cMemoryOwn;
+     swigCPtr = new global::System.Runtime.InteropServices.HandleRef(this, cPtr);
+@@ -110,7 +114,9 @@
+   }
+ 
+   public string asJSON() {
+-    string ret = uscxmlNativeCSharpPINVOKE.Data_asJSON(swigCPtr);
++    char[] utf8chars = utf8.GetChars(osEncoding.GetBytes(uscxmlNativeCSharpPINVOKE.Data_asJSON(swigCPtr)));
++
++    string ret = new string(utf8chars);
+     return ret;
+   }
+ 
+@@ -125,12 +131,15 @@
+   }
+ 
+   public string getAtom() {
+-    string ret = uscxmlNativeCSharpPINVOKE.Data_getAtom(swigCPtr);
++    char[] utf8chars = utf8.GetChars(osEncoding.GetBytes(uscxmlNativeCSharpPINVOKE.Data_getAtom(swigCPtr)));
++    string ret = new string(utf8chars);
++
+     return ret;
+   }
+ 
+   public void setAtom(string atom) {
+-    uscxmlNativeCSharpPINVOKE.Data_setAtom(swigCPtr, atom);
++    byte[] utf8bytes = utf8.GetBytes(atom);
++    uscxmlNativeCSharpPINVOKE.Data_setAtom(swigCPtr, utf8bytes);
+     if (uscxmlNativeCSharpPINVOKE.SWIGPendingException.Pending) throw uscxmlNativeCSharpPINVOKE.SWIGPendingException.Retrieve();
+   }
+ 
+@@ -164,7 +173,9 @@
+   }
+ 
+   public override string ToString() {
+-    string ret = uscxmlNativeCSharpPINVOKE.Data_ToString(swigCPtr);
++    char[] utf8chars = utf8.GetChars(osEncoding.GetBytes(uscxmlNativeCSharpPINVOKE.Data_ToString(swigCPtr)));
++    string ret = new string(utf8chars);
++
+     return ret;
+   }
+ 
+--- orig/src/bindings/swig/csharp/org/uscxml/uscxmlNativeCSharpPINVOKE.cs	2017-06-02 10:34:04.765225800 +0200
++++ modified/src/bindings/swig/csharp/org/uscxml/uscxmlNativeCSharpPINVOKE.cs	2017-05-25 15:37:45.572891700 +0200
+@@ -371,7 +371,7 @@
+   public static extern string Data_getAtom(global::System.Runtime.InteropServices.HandleRef jarg1);
+ 
+   [global::System.Runtime.InteropServices.DllImport("uscxmlNativeCSharp", EntryPoint="CSharp_orgfuscxml_Data_setAtom___")]
+-  public static extern void Data_setAtom(global::System.Runtime.InteropServices.HandleRef jarg1, string jarg2);
++  public static extern void Data_setAtom(global::System.Runtime.InteropServices.HandleRef jarg1, byte[] jarg2);
+ 
+   [global::System.Runtime.InteropServices.DllImport("uscxmlNativeCSharp", EntryPoint="CSharp_orgfuscxml_Data_getBinary___")]
+   public static extern global::System.IntPtr Data_getBinary(global::System.Runtime.InteropServices.HandleRef jarg1);

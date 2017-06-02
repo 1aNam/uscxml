@@ -28,6 +28,10 @@
 #include <xercesc/util/XMLString.hpp>
 #include <xercesc/dom/DOM.hpp>
 
+#ifdef WIN32
+	#include <codecvt>
+#endif
+
 #define HAS_ATTR(elem, attr) (elem)->hasAttribute(attr)
 #define HAS_ATTR_CAST(elem, attr) HAS_ATTR(static_cast<const DOMElement*>(elem), attr)
 #define ATTR(elem, attr) std::string(X((elem)->getAttribute(attr)))
@@ -131,6 +135,11 @@ public:
  */
 
 class USCXML_API X {
+#ifdef WIN32
+private:
+	std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> convert;
+#endif
+
 public :
 
 	X(X const &other) {
@@ -143,10 +152,14 @@ public :
 	X(const XMLCh* const toTranscode) {
 
 		if (toTranscode != NULL) {
-			// Call the private transcoding method
-			char* tmp = XERCESC_NS::XMLString::transcode(toTranscode);
-			_localForm = std::string(tmp);
-			XERCESC_NS::XMLString::release(&tmp);
+			#ifdef WIN32
+				_localForm = convert.to_bytes(toTranscode);
+			#else
+				// Call the private transcoding method
+				char* tmp = XERCESC_NS::XMLString::transcode(toTranscode);
+				_localForm = std::string(tmp);
+				XERCESC_NS::XMLString::release(&tmp);
+			#endif
 		}
 		_unicodeForm = NULL;
 		_deallocOther = false;
@@ -154,10 +167,20 @@ public :
 
 	X(const std::string& fromTranscode) {
 
-		// Call the private transcoding method
 		_localForm = fromTranscode;
-		_unicodeForm = XERCESC_NS::XMLString::transcode(fromTranscode.c_str());
-		_deallocOther = true;
+		#ifdef WIN32
+			std::wstring utf16 = convert.from_bytes(fromTranscode.data());
+			const wchar_t* cstring = utf16.c_str();
+			int utf16Length = (utf16.size() * sizeof(wchar_t)) + sizeof(wchar_t);
+			_unicodeForm = (XMLCh*) XERCESC_NS::XMLPlatformUtils::fgMemoryManager->allocate(utf16Length);
+			XERCESC_NS::XMLString::copyString(_unicodeForm, cstring);
+			_deallocOther = false;
+			// TODO: Maybe dealloc utf16 before leaving the method
+		#else
+			// Call the private transcoding method
+			_unicodeForm = XERCESC_NS::XMLString::transcode(fromTranscode.c_str());
+			_deallocOther = true;
+		#endif
 	}
 
 	X(const char* const fromTranscode) {
