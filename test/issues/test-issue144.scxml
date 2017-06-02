@@ -1,0 +1,27 @@
+﻿<scxml name="Test_SM" initial="InitialState" xmlns="http://www.w3.org/2005/07/scxml" version="1.0" datamodel="ecmascript">
+	<datamodel>
+		<!-- Variable utf8char is just one UTF-8 character with value 0xC3BC. -->
+		<data id="utf8char" expr="'ü'"/>
+	</datamodel>
+	<state id="InitialState">
+		<transition event="good" target="pass"/>
+		<transition event="bad" target="fail"/>
+		<onentry>
+			<if cond="utf8char == 'ü'">
+				<raise event="good"/>
+				<else/>
+				<raise event="bad"/>
+			</if>
+		</onentry>
+	</state>
+	<final id="pass">
+		<onentry>
+			<log expr="'Success: equality'"/>
+		</onentry>
+	</final>
+	<final id="fail">
+		<onentry>
+			<log expr="'Failure: inequality'"/>
+		</onentry>
+	</final>
+</scxml>
